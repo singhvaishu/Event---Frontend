@@ -1,6 +1,8 @@
+
+
 import React, { useState, useEffect } from "react";
-import { FaUserCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaUserAlt } from "react-icons/fa";
+import { useNavigate, Link } from "react-router-dom";
 
 const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -10,80 +12,72 @@ const Navbar = () => {
 
     const navigate = useNavigate();
 
-    // Load token from localStorage when the component mounts
     useEffect(() => {
         setIsClient(true);
         const storedToken = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
-        setToken(storedToken);  // Update token state based on stored token
-        // Empty dependency array ensures this runs once after initial render
+        setToken(storedToken);
         setUser(storedUser ? JSON.parse(storedUser) : null);
     }, []);
 
     const toggleDropdown = () => setDropdownOpen((prev) => !prev);
 
     const handleLogout = () => {
-        if (typeof window !== "undefined") {
-
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
-        }
-        window.location.href = "/login";
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
     };
+
     if (!isClient) return null;
+
+    const isGuestUser = user?.role === "guest"; // Check if the user is a guest
+
     return (
-        <header className="w-full bg-gray-500 sticky top-0 z-10">
+        <header className="w-full bg-black sticky top-0 z-10">
             <nav className="container mx-auto px-4 h-20 flex justify-between items-center">
                 {/* Logo */}
-                <h1 className="text-red-300 text-lg font-bold">MYTODOS</h1>
+                <h1 className="text-blue-700 text-lg font-bold">
+                    <Link to="/">MYTODOS</Link>
+                </h1>
 
                 {/* Desktop Navigation */}
                 <ul className="hidden md:flex gap-x-6 text-white">
-                    <li>
-                        <a href="/about" className="hover:text-red-300">
-                            About Us
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/services" className="hover:text-red-300">
-                            Services
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/contacts" className="hover:text-red-300">
-                            Contacts
-                        </a>
-                    </li>
+                    <li><Link to="/" className="hover:text-blue-700">About Us</Link></li>
+                    <li><Link to="/" className="hover:text-blue-700">Services</Link></li>
+                    <li><Link to="/" className="hover:text-blue-700">Contacts</Link></li>
                 </ul>
 
                 {/* Profile Dropdown */}
                 <div className="relative">
-                    <button
-                        onClick={toggleDropdown}
-                        className="h-12 w-12 rounded-full bg-red-300 flex items-center justify-center"
-                    >
-                        <FaUserCircle className="text-lg" />
+                    <button onClick={toggleDropdown} className="h-12 w-12 rounded-full bg-blue-700 flex items-center justify-center">
+                        <FaUserAlt className="text-lg" />
                     </button>
 
                     {dropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-20">
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-20">
                             <ul className="py-2">
                                 {!token ? (
                                     <>
                                         <li className="px-4 py-2 hover:bg-gray-200">
-                                            <a href="/login">Login</a>
+                                            <Link to="/login">Login</Link>
                                         </li>
                                         <li className="px-4 py-2 hover:bg-gray-200">
-                                            <a href="/signup">Signup</a>
+                                            <Link to="/signup">Signup</Link>
+                                        </li>
+                                        <li className="px-4 py-2 hover:bg-gray-200">
+                                            <Link to="/guest-register">Guest Register</Link>
                                         </li>
                                     </>
                                 ) : (
                                     <>
+                                        {/* Hide Dashboard if user is a guest */}
+                                        {!isGuestUser && (
+                                            <li className="px-4 py-2 hover:bg-gray-200">
+                                                <Link to="/dashboard">Dashboard</Link>
+                                            </li>
+                                        )}
                                         <li className="px-4 py-2 hover:bg-gray-200">
-                                            <a href="/dashboard">Dashboard</a>
-                                        </li>
-                                        <li className="px-4 py-2 hover:bg-gray-200">
-                                            <button onClick={handleLogout}>Logout</button>
+                                            <button onClick={handleLogout} className="w-full text-left">Logout</button>
                                         </li>
                                     </>
                                 )}
@@ -96,32 +90,19 @@ const Navbar = () => {
             {/* Mobile Navigation */}
             <div className="md:hidden bg-gray-500 text-white px-4">
                 <ul className="flex flex-col gap-y-2 py-4">
-                    <li>
-                        <a href="/about">About Us</a>
-                    </li>
-                    <li>
-                        <a href="/services">Services</a>
-                    </li>
-                    <li>
-                        <a href="/contacts">Contacts</a>
-                    </li>
+                    <li><Link to="/">About Us</Link></li>
+                    <li><Link to="/">Services</Link></li>
+                    <li><Link to="/">Contacts</Link></li>
                     {!token ? (
                         <>
-                            <li>
-                                <a href="/login">Login</a>
-                            </li>
-                            <li>
-                                <a href="/signup">Signup</a>
-                            </li>
+                            <li><Link to="/login">Login</Link></li>
+                            <li><Link to="/signup">Signup</Link></li>
+                            <li><Link to="/guest-register">Guest Register</Link></li>
                         </>
                     ) : (
                         <>
-                            <li>
-                                <a href="/dashboard">Dashboard</a>
-                            </li>
-                            <li>
-                                <button onClick={handleLogout}>Logout</button>
-                            </li>
+                            {!isGuestUser && <li><Link to="/dashboard">Dashboard</Link></li>}
+                            <li><button onClick={handleLogout}>Logout</button></li>
                         </>
                     )}
                 </ul>

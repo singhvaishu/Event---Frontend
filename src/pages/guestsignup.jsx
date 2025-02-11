@@ -1,71 +1,59 @@
-
-
-
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import image from "../assets/signup.jpg";
+import axios from "axios";
 
-const Signup = () => {
+const GuestSignup = () => {
     const [formData, setFormData] = useState({
         email: "",
         password: "",
         confirmPassword: "",
     });
-    const [errors, setErrors] = useState({});
+    const [error, setError] = useState("");
     const [userExists, setUserExists] = useState(false);
     const navigate = useNavigate();
 
-    const validateForm = () => {
-        let newErrors = {};
-
-
-        if (!formData.email) {
-            newErrors.email = "Email is required.";
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = "Enter a valid email address.";
-        }
-
-
-        if (!formData.password) {
-            newErrors.password = "Password is required.";
-        } else if (formData.password.length < 6) {
-            newErrors.password = "Password must be at least 6 characters.";
-        }
-
-        if (!formData.confirmPassword) {
-            newErrors.confirmPassword = "Confirm Password is required.";
-        } else if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = "Passwords do not match.";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-
+    // Handle input changes
     const handleInputChange = (e) => {
         const { id, value } = e.target;
         setFormData((prevData) => ({ ...prevData, [id]: value }));
-        setErrors((prevErrors) => ({ ...prevErrors, [id]: "" }));
     };
 
+    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
 
-        if (!validateForm()) return;
+        const { email, password, confirmPassword } = formData;
+
+        // Validate password length and confirm password match
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters.");
+            return;
+        }
+        if (password !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
 
         try {
-            const response = await axios.post("http://localhost:5000/signup", formData);
+            const response = await axios.post("http://localhost:5000/guestsignup", {
+                email,
+                password,
+                confirmPassword,
+            });
 
+            // If signup is successful, redirect to login page
             if (response.data.message === "User registered successfully") {
+                alert("Signup successful! Redirecting to login...");
                 navigate("/login");
             }
         } catch (err) {
             if (err.response?.data?.message === "Email already registered") {
                 setUserExists(true);
+                setError("");
             } else {
-                setErrors({ general: "Failed to register. Please try again." });
+                setError("Failed to register. Please try again.");
             }
         }
     };
@@ -85,10 +73,10 @@ const Signup = () => {
                         />
                     </div>
 
-                    {/* Right side: Signup Form */}
+                    {/* Right side: Guest Signup Form */}
                     <div className="w-full md:w-2/3 lg:w-1/3">
                         <main className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-                            <h1 className="text-3xl font-bold mb-6 text-gray-900">Sign Up</h1>
+                            <h1 className="text-3xl font-bold mb-6 text-gray-900">Guest Signup</h1>
                             <form className="space-y-6" onSubmit={handleSubmit}>
                                 <div>
                                     <label htmlFor="email" className="block text-sm font-medium">
@@ -100,10 +88,9 @@ const Signup = () => {
                                         placeholder="Enter your email"
                                         value={formData.email}
                                         onChange={handleInputChange}
-                                        className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${errors.email ? "border-red-500 focus:ring-red-500" : "focus:ring-gray-600"
-                                            }`}
+                                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                                        required
                                     />
-                                    {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
                                 </div>
                                 <div>
                                     <label htmlFor="password" className="block text-sm font-medium">
@@ -115,10 +102,10 @@ const Signup = () => {
                                         placeholder="Enter your password"
                                         value={formData.password}
                                         onChange={handleInputChange}
-                                        className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${errors.password ? "border-red-500 focus:ring-red-500" : "focus:ring-gray-600"
-                                            }`}
+                                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                                        required
+                                        minLength={6}
                                     />
-                                    {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
                                 </div>
                                 <div>
                                     <label htmlFor="confirmPassword" className="block text-sm font-medium">
@@ -130,14 +117,12 @@ const Signup = () => {
                                         placeholder="Confirm your password"
                                         value={formData.confirmPassword}
                                         onChange={handleInputChange}
-                                        className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 ${errors.confirmPassword ? "border-red-500 focus:ring-red-500" : "focus:ring-gray-600"
-                                            }`}
+                                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                                        required
+                                        minLength={6}
                                     />
-                                    {errors.confirmPassword && (
-                                        <p className="text-red-500 text-sm">{errors.confirmPassword}</p>
-                                    )}
                                 </div>
-                                {errors.general && <p className="text-red-500 text-sm">{errors.general}</p>}
+                                {error && <p className="text-red-500 text-sm">{error}</p>}
                                 <button
                                     type="submit"
                                     className="w-full bg-gray-700 hover:bg-gray-800 text-white p-3 rounded-lg transition duration-300"
@@ -147,7 +132,7 @@ const Signup = () => {
                             </form>
 
                             {/* If user already exists, show sign-in link */}
-                            {userExists ? (
+                            {userExists && (
                                 <p className="text-center text-sm text-red-500 mt-4">
                                     User already exists.{" "}
                                     <span
@@ -157,17 +142,15 @@ const Signup = () => {
                                         Sign in here.
                                     </span>
                                 </p>
-                            ) : (
-                                <div className="w-full text-center">
-                                    <p className="text-sm text-gray-600">
-                                        Already have an account?{" "}
-                                        <a href="/login" className="text-blue-500 hover:underline">
-                                            Login
-                                        </a>
-                                    </p>
-                                </div>
                             )}
-
+                            <div className="w-full text-center">
+                                <p className="text-sm text-gray-600">
+                                    Already have an account?{' '}
+                                    <a href="/login" className="text-blue-500 hover:underline">
+                                        Login
+                                    </a>
+                                </p>
+                            </div>
                         </main>
                     </div>
                 </div>
@@ -176,4 +159,4 @@ const Signup = () => {
     );
 };
 
-export default Signup;
+export default GuestSignup;

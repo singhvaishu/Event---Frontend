@@ -1,147 +1,147 @@
 
-
-
-
-
-
-
-
-import React, { useState, useEffect } from "react";
-import TodoCard from "../components/todocard";
-import AddTodoModal from "../components/addtodo";
-import { fetchTodos, createTodo, updateTodo, deleteTodo } from "../utils/apiClient";
+import React, { useState, useEffect } from 'react';
+import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaDollarSign } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 const Dashboard = () => {
-    const [todos, setTodos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [events, setEvents] = useState([]);
+    const [filteredEvents, setFilteredEvents] = useState([]);
+    const [category, setCategory] = useState("All");
+    const [dateFilter, setDateFilter] = useState("upcoming");
     const [searchQuery, setSearchQuery] = useState("");
-    useEffect(() => {
-        const loadTodos = async () => {
-            try {
-                setLoading(true);
-                const fetchedTodos = await fetchTodos();
-                setTodos(fetchedTodos);
-            } catch (err) {
-                setError('Error fetching todos');
-            } finally {
-                setLoading(false);
-            }
-        };
 
-        loadTodos();
+    useEffect(() => {
+        fetch('http://localhost:5000/api/events')
+            .then(response => response.json())
+            .then(data => {
+                setEvents(data);
+                setFilteredEvents(data);
+            })
+            .catch(error => console.error('Error fetching events:', error));
     }, []);
 
-    const handleCreateOrUpdate = async (todoData) => {
-        try {
-            let newOrUpdatedTodo;
-            if (todoData._id) {
+    // Filtering logic
+    useEffect(() => {
+        let filtered = events;
 
-                newOrUpdatedTodo = await updateTodo(todoData._id, todoData);
-            } else {
-
-                newOrUpdatedTodo = await createTodo(todoData);
-            }
-
-
-            setTodos((prevTodos) => {
-                if (todoData._id) {
-
-                    return prevTodos.map((todo) =>
-                        todo._id === todoData._id ? newOrUpdatedTodo : todo
-                    );
-                } else {
-
-                    return [...prevTodos, newOrUpdatedTodo];
-                }
-            });
-        } catch (err) {
-            setError('Error saving todo');
+        // Filter by category
+        if (category !== "All") {
+            filtered = filtered.filter(event => event.category === category);
         }
-    };
 
-    const handleDelete = async (id) => {
-        try {
-            await deleteTodo(id);
-            // Remove the deleted todo from the list
-            setTodos((prevTodos) => prevTodos.filter((todo) => todo._id !== id));
-        } catch (err) {
-            setError('Error deleting todo');
+        // Filter by date
+        const currentDate = new Date();
+        if (dateFilter === "upcoming") {
+            filtered = filtered.filter(event => new Date(event.date) >= currentDate);
+        } else {
+            filtered = filtered.filter(event => new Date(event.date) < currentDate);
         }
-    };
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>{error}</div>;
+        // Filter by search query
+        if (searchQuery.trim() !== "") {
+            filtered = filtered.filter(event =>
+                event.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
 
-    // Filter Todos based on search query
-    const filteredTodos = todos.filter((todo) =>
-        todo.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+        setFilteredEvents(filtered);
+    }, [category, dateFilter, searchQuery, events]);
 
     return (
-        <div className="p-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="hidden lg:block bg-white p-6 rounded-lg shadow">
-                    <h2 className="text-2xl font-bold mb-4 text-gray-800">Add or Edit Task</h2>
-                    <AddTodoModal
-                        onClose={() => setEditingTodo(null)}
-                        onSave={handleCreateOrUpdate}
-                    // initialData={editingTodo}
-                    />
+        <div className="w-full min-h-screen bg-gray-100 flex flex-col items-center p-4">
+            <div className="w-full max-w-7xl">
+                <h1 className="text-3xl font-bold text-center mb-6">Dashboard - Events</h1>
+                {/* Buttons for navigation */}
+                <div className="mt-4 mb-4 flex justify-center gap-6">
+                    <Link to="/create-event">
+                        <button className="bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform hover:bg-green-600 hover:scale-105 hover:shadow-xl transition duration-300 ease-in-out">
+                            Create Event
+                        </button>
+                    </Link>
+                    <Link to="/event-detail">
+                        <button className="bg-blue-500 text-white px-6 py-3 rounded-lg shadow-lg transform hover:bg-blue-600 hover:scale-105 hover:shadow-xl transition duration-300 ease-in-out">
+                            Event Details
+                        </button>
+                    </Link>
                 </div>
 
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-800 mb-4">To-Do Dashboard</h1>
-                    <div className="lg:hidden flex items-center mb-6">
-                        <input
-                            type="text"
-                            placeholder="Search tasks by title"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mr-4"
-                        />
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="bg-blue-500 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-600"
-                        >
-                            +
-                        </button>
-                    </div>
-                    {/* Search Bar - Large Screens Only */}
-                    <div className="hidden lg:flex mb-6">
-                        <input
-                            type="text"
-                            placeholder="Search tasks by title"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full lg:w-[100%] border rounded-lg px-4 py-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 lg:mr-4"
-                        />
-                    </div>
 
-                    <div className="grid gap-4 grid-cols-1">
-                        {filteredTodos.map((todo) => (
-                            <TodoCard
-                                key={todo._id}
-                                todo={todo}
-                                onDelete={handleDelete}
-                                onEdit={(todo) => {
-                                    setEditingTodo(todo);
-                                    setShowModal(true);
-                                }}
-                            />
-                        ))}
-                    </div>
+                {/* Filters */}
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+                    <input
+                        type="text"
+                        placeholder="Search events..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="p-2 border rounded-md w-full sm:w-1/3"
+                    />
+
+                    <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="p-2 border rounded-md"
+                    >
+                        <option value="All">All Categories</option>
+                        <option value="Music">Music</option>
+                        <option value="Tech">Tech</option>
+                        <option value="Business">Business</option>
+                        <option value="Sports">Sports</option>
+                    </select>
+
+                    <select
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                        className="p-2 border rounded-md"
+                    >
+                        <option value="upcoming">Upcoming Events</option>
+                        <option value="past">Past Events</option>
+                    </select>
+                </div>
+                {/* Events Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredEvents.length > 0 ? (
+                        filteredEvents.map(event => (
+                            <div key={event._id} className="bg-white shadow-lg rounded-lg p-6 hover:shadow-xl transition duration-300 ease-in-out">
+                                <img
+                                    src={event.imageUrl || "https://res.cloudinary.com/dqns11yj7/image/upload/v1739196869/r3_pa3s5z.png"}
+                                    alt={event.name}
+                                    className="w-full h-52 object-cover rounded-lg mb-4"
+                                />
+                                <h3 className="text-xl font-semibold text-gray-800">{event.name}</h3>
+                                <p className="mt-2 text-gray-700">{event.description}</p>
+
+                                <div className="flex items-center text-sm text-gray-600 mt-2">
+                                    <FaCalendarAlt className="mr-2 text-gray-500" />
+                                    <p>{event.date}</p>
+                                </div>
+                                <div className="flex items-center text-sm text-gray-600 mt-2">
+                                    <FaMapMarkerAlt className="mr-2 text-gray-500" />
+                                    <p>{event.location}</p>
+                                </div>
+
+                                <div className="flex items-center text-lg font-semibold text-blue-600 mt-3">
+                                    <FaDollarSign className="mr-2 text-gray-500" />
+                                    <p>${event.price}</p>
+                                </div>
+
+                                <div className="flex items-center text-sm text-gray-500 mt-2">
+                                    <FaUsers className="mr-2" />
+                                    <p>{event.peopleAttend} Attendees</p>
+                                </div>
+
+                                <Link to={`/event-detail/${event._id}`}>
+                                    <button className="mt-4 bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition duration-300 ease-in-out">
+                                        View Event
+                                    </button>
+                                </Link>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-center text-gray-500 col-span-full">No events available.</p>
+                    )}
                 </div>
             </div>
-
-            <button
-                onClick={() => setTodos([])}
-                className="mt-6 bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 w-full lg:hidden"
-            >
-                Clear All
-            </button>
         </div>
     );
-}
+};
 
 export default Dashboard;
-
