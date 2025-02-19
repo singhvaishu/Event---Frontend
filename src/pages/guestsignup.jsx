@@ -37,7 +37,7 @@ const GuestSignup = () => {
         }
 
         try {
-            const response = await axios.post("http://localhost:5000/guestsignup", {
+            const response = await axios.post("https://event-backend-production-c3a4.up.railway.app/guestsignup", {
                 email,
                 password,
                 confirmPassword,
@@ -45,7 +45,7 @@ const GuestSignup = () => {
 
             // If signup is successful, redirect to login page
             if (response.data.message === "User registered successfully") {
-                alert("Signup successful! Redirecting to login...");
+                //  alert("Signup successful! Redirecting to login...");
                 navigate("/login");
             }
         } catch (err) {

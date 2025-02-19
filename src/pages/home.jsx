@@ -13,7 +13,7 @@ const Home = () => {
     const [showModal, setShowModal] = useState(false);
     const navigate = useNavigate();
     useEffect(() => {
-        axios.get("http://localhost:5000/api/events")
+        axios.get("https://event-backend-production-c3a4.up.railway.app/api/events")
             .then((response) => {
                 setEvents(response.data);
                 setFilteredEvents(response.data);

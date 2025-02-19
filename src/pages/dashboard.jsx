@@ -10,7 +10,7 @@ const Dashboard = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/events')
+        fetch('https://event-backend-production-c3a4.up.railway.app/api/events')
             .then(response => response.json())
             .then(data => {
                 setEvents(data);

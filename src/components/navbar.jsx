@@ -42,8 +42,8 @@ const Navbar = () => {
 
                 {/* Desktop Navigation */}
                 <ul className="hidden md:flex gap-x-6 text-white">
+                    <li><Link to="/home" className="hover:text-blue-700">Home</Link></li>
                     <li><Link to="/" className="hover:text-blue-700">About Us</Link></li>
-                    <li><Link to="/" className="hover:text-blue-700">Services</Link></li>
                     <li><Link to="/" className="hover:text-blue-700">Contacts</Link></li>
                 </ul>
 
@@ -90,8 +90,8 @@ const Navbar = () => {
             {/* Mobile Navigation */}
             <div className="md:hidden bg-gray-500 text-white px-4">
                 <ul className="flex flex-col gap-y-2 py-4">
+                    <li><Link to="/home">Home</Link></li>
                     <li><Link to="/">About Us</Link></li>
-                    <li><Link to="/">Services</Link></li>
                     <li><Link to="/">Contacts</Link></li>
                     {!token ? (
                         <>

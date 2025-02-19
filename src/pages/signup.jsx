@@ -56,7 +56,7 @@ const Signup = () => {
         if (!validateForm()) return;
 
         try {
-            const response = await axios.post("http://localhost:5000/signup", formData);
+            const response = await axios.post("https://event-backend-production-c3a4.up.railway.app/signup", formData);
 
             if (response.data.message === "User registered successfully") {
                 navigate("/login");

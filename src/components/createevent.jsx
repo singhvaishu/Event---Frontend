@@ -25,7 +25,7 @@ const CreateEvent = () => {
 
     const fetchEvents = async () => {
         try {
-            const response = await fetch("http://localhost:5000/api/events");
+            const response = await fetch("https://event-backend-production-c3a4.up.railway.app/api/events");
             const data = await response.json();
             setEvents(data);
         } catch (error) {
@@ -46,7 +46,7 @@ const CreateEvent = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         const method = editingId ? "PUT" : "POST";
-        const url = editingId ? `http://localhost:5000/api/events/${editingId}` : "http://localhost:5000/api/events";
+        const url = editingId ? `https://event-backend-production-c3a4.up.railway.app/api/events/${editingId}` : "https://event-backend-production-c3a4.up.railway.app/api/events";
 
         const token = localStorage.getItem("token");
         const formData = new FormData();
@@ -114,7 +114,7 @@ const CreateEvent = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+            const response = await fetch(`https://event-backend-production-c3a4.up.railway.app/api/events/${eventId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
